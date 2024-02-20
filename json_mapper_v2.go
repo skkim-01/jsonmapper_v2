@@ -58,6 +58,34 @@ func NewJsonMapBytes(data []byte) (*JsonMapper, error) {
 	return &JsonMapper{m: m}, nil
 }
 
+// NewJsonMapObject creates a new JsonMapper instance from an arbitrary object.
+// This function attempts to convert the input object `o` into a map with string keys and interface{} values.
+// If `o` is already of type map[string]interface{}, it is used directly.
+// Otherwise, the function tries to marshal and then unmarshal `o` to achieve the conversion.
+//
+// Parameters:
+// - o: The input object to be converted into a map. This can be of any type.
+//
+// Returns:
+// - A pointer to a newly created JsonMapper instance containing the map, or nil if an error occurs.
+// - An error if the input object cannot be marshaled into JSON or if the JSON cannot be unmarshaled into a map.
+//
+// Note: This function may not be efficient for large objects or in performance-critical code paths,
+// as it involves marshaling and unmarshaling of JSON data. Consider alternative approaches if this is a concern.
+func NewJsonMapObject(o interface{}) (*JsonMapper, error) {
+	m, ok := o.(map[string]interface{})
+	if !ok {
+		buffer, err := json.Marshal(o)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(buffer, &m); err != nil {
+			return nil, err
+		}
+	}
+	return &JsonMapper{m: m}, nil
+}
+
 // Find retrieves the value located at the specified keyPath within the JSON structure.
 // The keyPath is a dot-separated string indicating the path to the value.
 // Supports array indexing using the notation [index] or .index.
